@@ -59,7 +59,7 @@ namespace RefTheme
             var proc1 = new Thread(() => { AutoUpdateChecher(); });
             proc1.Start();
         }
-
+        //
         private void MetroButton1_Click(object sender, EventArgs e)
         {
             MesCaller mesCaller = MessageBoxCaller;
