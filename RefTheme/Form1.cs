@@ -13,6 +13,7 @@ using inifiles;
 using System.IO;
 using MetroFramework;
 using System.Threading;
+using Microsoft.Win32.TaskScheduler;
 using static RefTheme.ThemeRef;
 
 namespace RefTheme
@@ -38,14 +39,18 @@ namespace RefTheme
             constantsAndVars.SetterDelaysStart();
             toggleAuto.Checked = bool.TryParse(ConstantsAndVars.ini.ReadINI(ConstantsAndVars.settingCol[0], ConstantsAndVars.settingCol[4]), out var result) ? result : false;
             numUD1.Value = ConstantsAndVars.DelayBeforeStart;
+            if (!File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu) + @"\RefTheme.lnk"))
+                ShortcutMaker.Create();
             изменитьНастройкиToolStripMenuItem.Text = NotifyMessages.notifyIconToolText;
             numUD2.Value = ConstantsAndVars.DelayThemeUpdate;
             numUD3.Value = ConstantsAndVars.DelaySettingClose;
             labelVersion.Text = NotifyMessages.versionS + " " + Application.ProductVersion;
             numUD4.Value = ConstantsAndVars.DelayProgramClose;
+
+
+            buttonTaskCreate.Text = ThemeRef.IsTaskActive() ? "Disable refresh task" : "Activate auto refresh task";
             if (toggleAuto.Checked)
             {
-
                 if (ConstantsAndVars.themePaths != null)
                 {
                     this.WindowState = FormWindowState.Minimized;
@@ -94,20 +99,19 @@ namespace RefTheme
                 message = NotifyMessages.notifyTastAlready;
             if (diYes == MessageBoxCaller(message, "Notification", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
             {
-                DialogResult abortDR = DialogResult.Abort;
-                ConstantsAndVars.ini.Write(ConstantsAndVars.settingCol[0], ConstantsAndVars.settingCol[3], "true");
-                var proc = new Thread(() =>          {
-                    if (abortDR != themeRef.TaskActivate(MessageBoxCaller))
-                        toggleAuto.Checked = true;   });               
-                proc.Start();
-                
+                var taskResult = new ThemeRef().TaskActivate();
+                ConstantsAndVars.ini.Write(ConstantsAndVars.settingCol[0], ConstantsAndVars.settingCol[3], taskResult.Item1.ToString());
+                MetroMessageBox.Show(this, taskResult.Item3, taskResult.Item2, MessageBoxButtons.OK,
+                    (taskResult.Item3 == "Error" ? MessageBoxIcon.Error : MessageBoxIcon.Information));
+                toggleAuto.Checked = true;
+
             }
         }
         private void metroButton1_Click_1(object sender, EventArgs e)
         {
 
             //MesCaller mesCaller = MessageBoxCaller;
-            themeRef.TaskActivate(MessageBoxCaller);
+            themeRef.TaskActivate();
             //MessageBox.Show(ConstantsAndVars.themePathDefault);
         }
         #region numUD
@@ -179,13 +183,13 @@ namespace RefTheme
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            
+
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-           // var pr = Process.GetProcessesByName("RefTheme");
-           //  pr[0].Kill();
+            // var pr = Process.GetProcessesByName("RefTheme");
+            //  pr[0].Kill();
         }
     }
 }

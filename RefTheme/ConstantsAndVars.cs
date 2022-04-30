@@ -8,7 +8,7 @@ namespace RefTheme
 {
     public class ConstantsAndVars
     {
-        public static inifiles.IniFile ini = new inifiles.IniFile(settingPath() + "setting.ini");
+        public static inifiles.IniFile ini = new inifiles.IniFile(settingPath + "setting.ini");
         ThemeRef _refTheme = new ThemeRef();
         static Form1 _form1 = new Form1();
         public static string themePathDefault = @"C:\Windows\Resources\Themes\";
@@ -53,12 +53,15 @@ namespace RefTheme
             //if (delayID == 3) return 15;
             //else return 4;
         }
-        public static string settingPath()
+        public static string settingPath
         {
-            string st = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\RefTheme\";
-            if (!System.IO.Directory.Exists(st))
-                System.IO.Directory.CreateDirectory(st);
-            return st;
+            get
+            {
+                string st = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\RefTheme\";
+                if (!System.IO.Directory.Exists(st))
+                    System.IO.Directory.CreateDirectory(st);
+                return st;
+            }
         }
         public static bool toggleAuto()
         {
